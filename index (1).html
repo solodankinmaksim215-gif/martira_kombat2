@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0c0f18">
+<title>МАРТИРА КОМБАТ</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  html{touch-action:manipulation}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    background:#05070c;color:#eef1f7;overscroll-behavior:none;
+    display:flex;justify-content:center;-webkit-font-smoothing:antialiased;
+  }
+  #app{
+    width:100%;max-width:430px;min-height:100vh;min-height:100dvh;
+    display:flex;flex-direction:column;position:relative;
+    background:radial-gradient(130% 80% at 50% -10%,#182036 0%,#0e1220 45%,#090b12 100%);
+    box-shadow:0 0 80px rgba(0,0,0,.8);
+  }
+  button{font:inherit;border:0;background:none;color:inherit;cursor:pointer;touch-action:manipulation}
+  b{font-weight:800}
+
+  /* ---------- header ---------- */
+  header{
+    display:flex;align-items:center;gap:10px;padding:14px 16px 8px;
+  }
+  .h-avatar{
+    width:36px;height:36px;border-radius:50%;flex:none;overflow:hidden;
+    border:2px solid rgba(255,210,90,.5);background:#1a2033;
+  }
+  .h-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  .h-title{flex:1;text-align:center;line-height:1.15}
+  .h-title h1{font-size:16px;letter-spacing:.6px;font-weight:800}
+  .h-title span{font-size:11px;color:#7d8496;font-weight:500;letter-spacing:.4px}
+  .h-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.06);font-size:18px;color:#aab1c4;display:flex;align-items:center;justify-content:center;flex:none}
+  .h-btn:active{transform:scale(.92)}
+
+  main{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:10px;scrollbar-width:none}
+  main::-webkit-scrollbar{display:none}
+
+  .page{display:none;animation:fade .2s ease}
+  .page.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* ---------- coin ---------- */
+  .c{
+    --s:16px;width:var(--s);height:var(--s);border-radius:50%;flex:none;
+    display:inline-flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 35% 28%,#ffe9b0 0%,#ffd25a 38%,#e8a412 72%,#8f5f04 100%);
+    border:calc(var(--s)*.09) solid #a06b06;
+    box-shadow:inset 0 calc(var(--s)*-.12) calc(var(--s)*.22) rgba(90,50,0,.55),inset 0 calc(var(--s)*.1) calc(var(--s)*.18) rgba(255,255,255,.5);
+    color:#7a4a00;font-size:calc(var(--s)*.56);font-weight:900;line-height:1;
+  }
+  .c.c14{--s:14px}.c.c18{--s:18px}.c.c20{--s:20px}.c.c46{--s:46px}
+
+  /* ---------- exchange (main) ---------- */
+  .stats{display:flex;gap:7px;padding:6px 12px 4px}
+  .stat{
+    flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);
+    border-radius:12px;padding:7px 4px 8px;text-align:center;
+  }
+  .stat .lb{display:block;font-size:9px;color:#8d94a8;letter-spacing:.3px;margin-bottom:3px;white-space:nowrap}
+  .stat .vl{font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:3px}
+  .stat .vl.blue{color:#4d7cfe}.stat .vl.green{color:#3ddc84}
+
+  .balance{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 0 4px}
+  .balance b{font-size:42px;font-weight:800;letter-spacing:.5px;text-shadow:0 4px 24px rgba(255,210,90,.25)}
+
+  .lvl-row{display:flex;justify-content:space-between;align-items:center;padding:8px 18px 5px;font-size:12px}
+  .lvl-row .ln{color:#8fe3ff;font-weight:600}
+  .lvl-row .ln small{color:#5b6478;margin-left:2px}
+  .lvl-bar{height:9px;margin:0 16px;border-radius:6px;background:rgba(255,255,255,.07);overflow:hidden}
+  .lvl-bar i{
+    display:block;height:100%;border-radius:6px;width:0%;
+    background:linear-gradient(90deg,#4be07a 0%,#b3e34b 55%,#8b6df0 100%);
+    transition:width .35s ease;box-shadow:0 0 12px rgba(139,109,240,.5);
+  }
+
+  .arena{position:relative;display:flex;justify-content:center;align-items:center;padding:26px 0 18px}
+  .tap-circle{
+    width:min(64vw,292px);aspect-ratio:1;border-radius:50%;position:relative;overflow:hidden;
+    cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+    background:radial-gradient(circle at 50% 35%,#262d4a,#141829 72%);
+    border:3px solid rgba(139,109,240,.55);
+    box-shadow:0 0 0 7px rgba(124,77,255,.13),0 0 70px rgba(124,77,255,.30),inset 0 0 46px rgba(0,0,0,.65);
+    transition:transform .07s ease;
+  }
+  .tap-circle img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;transition:opacity .2s}
+  .tap-circle.pressed{transform:scale(.955)}
+  .tap-circle.denied{animation:denied .3s ease}
+  @keyframes denied{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  .pop{
+    position:absolute;font-weight:900;font-size:24px;color:#ffd25a;pointer-events:none;z-index:5;
+    text-shadow:0 2px 10px rgba(0,0,0,.7),0 0 18px rgba(255,210,90,.4);
+    animation:fly .8s ease-out forwards;white-space:nowrap;
+  }
+  @keyframes fly{0%{opacity:0;transform:translate(-50%,-30%) scale(.7)}12%{opacity:1}100%{opacity:0;transform:translate(-50%,-170%) scale(1.12)}}
+
+  .energy-row{display:flex;align-items:center;justify-content:space-between;padding:0 18px 8px}
+  .energy{font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .energy .bolt{color:#ffd25a;font-size:18px;filter:drop-shadow(0 0 8px rgba(255,210,90,.6))}
+  .energy span.dim{color:#8d94a8;font-weight:600}
+  .boost-btn{
+    display:flex;align-items:center;gap:7px;font-weight:700;font-size:14px;
+    color:#e8ecff;padding:9px 16px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(139,109,240,.25),rgba(77,124,254,.18));
+    border:1px solid rgba(139,109,240,.4);
+  }
+  .boost-btn:active{transform:scale(.95)}
+
+  /* ---------- page headers ---------- */
+  .ph{padding:10px 16px 4px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .ph h2{font-size:19px;font-weight:800;letter-spacing:.3px}
+  .ph .bal{display:flex;align-items:center;gap:6px;background:rgba(255,210,90,.1);border:1px solid rgba(255,210,90,.35);padding:6px 12px;border-radius:20px;font-weight:800;font-size:14px;color:#ffd25a}
+  .ph-sub{padding:0 16px 12px;font-size:12.5px;color:#8d94a8;line-height:1.45}
+
+  /* ---------- mine ---------- */
+  .mine-list{padding:4px 14px 16px;display:flex;flex-direction:column;gap:9px}
+  .mine-card{
+    display:flex;align-items:center;gap:12px;padding:12px 12px;
+    background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);border-radius:16px;
+  }
+  .mine-ic{width:46px;height:46px;flex:none;border-radius:13px;background:rgba(139,109,240,.13);display:flex;align-items:center;justify-content:center;font-size:23px}
+  .mine-body{flex:1;min-width:0}
+  .mine-name{font-size:14px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mine-sub{font-size:11.5px;color:#8d94a8;display:flex;align-items:center;gap:4px}
+  .mine-sub b{color:#3ddc84}
+  .mine-lvl{font-size:10.5px;color:#5b6478;margin-top:2px}
+  .buy{
+    flex:none;display:flex;align-items:center;gap:6px;padding:9px 13px;border-radius:12px;
+    background:rgba(255,210,90,.12);border:1px solid rgba(255,210,90,.4);
+    color:#ffd25a;font-weight:800;font-size:13px;transition:transform .08s;
+  }
+  .buy:active{transform:scale(.94)}
+  .buy.no{opacity:.4}
+
+  /* ---------- skins ---------- */
+  .skins-grid{padding:4px 14px 18px;display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .skin-card{
+    background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;overflow:hidden;position:relative;
+  }
+  .skin-card.active{border-color:rgba(61,220,132,.6);box-shadow:0 0 0 1px rgba(61,220,132,.35),0 6px 22px rgba(61,220,132,.12)}
+  .skin-img{position:relative;aspect-ratio:1;background:#151a2b}
+  .skin-img img{width:100%;height:100%;object-fit:cover;display:block}
+  .skin-bonus{
+    position:absolute;top:7px;left:7px;font-size:10px;font-weight:800;padding:3px 8px;border-radius:9px;
+    background:rgba(0,0,0,.55);backdrop-filter:blur(4px);color:#ffd25a;border:1px solid rgba(255,210,90,.35);
+  }
+  .skin-info{padding:9px 11px 11px}
+  .skin-name{font-size:13px;font-weight:700;margin-bottom:7px}
+  .skin-btn{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:5px;
+    padding:8px 0;border-radius:11px;font-size:12.5px;font-weight:800;transition:transform .08s;
+  }
+  .skin-btn:active{transform:scale(.96)}
+  .skin-btn.price{background:rgba(255,210,90,.12);border:1px solid rgba(255,210,90,.4);color:#ffd25a}
+  .skin-btn.price.no{opacity:.4}
+  .skin-btn.pick{background:rgba(139,109,240,.16);border:1px solid rgba(139,109,240,.45);color:#b7a4ff}
+  .skin-btn.on{background:rgba(61,220,132,.13);border:1px solid rgba(61,220,132,.45);color:#3ddc84;cursor:default}
+
+  /* ---------- friends ---------- */
+  .fr-hero{margin:14px 16px;padding:22px 18px;border-radius:20px;text-align:center;
+    background:linear-gradient(150deg,rgba(139,109,240,.16),rgba(77,124,254,.08));
+    border:1px solid rgba(139,109,240,.3)}
+  .fr-hero .big{font-size:44px;margin-bottom:8px}
+  .fr-hero h3{font-size:17px;font-weight:800;margin-bottom:5px}
+  .fr-hero p{font-size:12.5px;color:#9aa1b5;line-height:1.5;margin-bottom:14px}
+  .fr-link{display:flex;gap:8px}
+  .fr-link input{
+    flex:1;min-width:0;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);
+    border-radius:12px;padding:10px 12px;color:#cfd6ea;font-size:12px;font-family:inherit;
+  }
+  .fr-copy{
+    flex:none;padding:10px 15px;border-radius:12px;font-weight:800;font-size:12.5px;
+    background:linear-gradient(135deg,#8b6df0,#4d7cfe);color:#fff;
+  }
+  .fr-copy:active{transform:scale(.95)}
+  .fr-list{padding:4px 16px;display:flex;flex-direction:column;gap:9px}
+  .fr-empty{text-align:center;color:#5b6478;font-size:13px;padding:26px 10px;line-height:1.6}
+  .fr-item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:11px 13px;animation:fade .25s ease}
+  .fr-ava{width:42px;height:42px;flex:none;border-radius:50%;background:rgba(139,109,240,.16);display:flex;align-items:center;justify-content:center;font-size:20px}
+  .fr-body{flex:1;min-width:0}
+  .fr-name{font-size:14px;font-weight:700}
+  .fr-date{font-size:11px;color:#5b6478;margin-top:2px}
+  .fr-plus{display:flex;align-items:center;gap:5px;color:#3ddc84;font-weight:800;font-size:13px}
+
+  /* ---------- bottom nav ---------- */
+  .nav-wrap{position:sticky;bottom:0;z-index:20;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+    background:linear-gradient(transparent,rgba(5,7,12,.92) 38%)}
+  nav{
+    display:flex;gap:4px;padding:6px;border-radius:22px;
+    background:rgba(18,22,34,.92);backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,.07);
+  }
+  nav button{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:8px 0 7px;border-radius:16px;color:#7d8496;font-size:10.5px;font-weight:700;
+    transition:background .15s,color .15s;
+  }
+  nav button .ic{font-size:20px;line-height:1;filter:grayscale(.6) opacity(.75);transition:filter .15s}
+  nav button.active{background:rgba(255,210,90,.13);color:#ffd25a}
+  nav button.active .ic{filter:none}
+
+  /* ---------- bottom sheet ---------- */
+  .sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.62);opacity:0;pointer-events:none;transition:opacity .2s}
+  .sheet.open{opacity:1;pointer-events:auto}
+  .sheet .panel{
+    position:absolute;bottom:0;left:50%;transform:translate(-50%,102%);
+    width:100%;max-width:430px;max-height:86%;overflow-y:auto;
+    background:#151a29;border-radius:26px 26px 0 0;padding:14px 16px calc(20px + env(safe-area-inset-bottom));
+    border-top:1px solid rgba(255,255,255,.1);transition:transform .25s cubic-bezier(.2,.9,.3,1);
+  }
+  .sheet.open .panel{transform:translate(-50%,0)}
+  .grab{width:40px;height:4px;border-radius:3px;background:rgba(255,255,255,.18);margin:0 auto 12px}
+  .sheet h3{font-size:17px;font-weight:800;margin-bottom:3px}
+  .sheet .s-sub{font-size:12px;color:#8d94a8;margin-bottom:14px}
+  .bs-list{display:flex;flex-direction:column;gap:9px}
+  .bs-item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:12px}
+  .bs-ic{width:44px;height:44px;flex:none;border-radius:13px;background:rgba(255,210,90,.1);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .bs-body{flex:1;min-width:0}
+  .bs-name{font-size:14px;font-weight:700}
+  .bs-desc{font-size:11.5px;color:#8d94a8;margin-top:2px}
+  .bs-used{font-size:10.5px;color:#5b6478;margin-top:2px}
+  .danger-btn{width:100%;padding:13px;border-radius:14px;background:rgba(255,90,90,.1);border:1px solid rgba(255,90,90,.4);color:#ff7a7a;font-weight:800;font-size:13.5px;margin-top:6px}
+  .sound-btn{width:100%;padding:13px;border-radius:14px;background:rgba(139,109,240,.12);border:1px solid rgba(139,109,240,.4);color:#b7a4ff;font-weight:800;font-size:13.5px;margin:4px 0 10px}
+  .close-btn{width:100%;padding:13px;border-radius:14px;background:rgba(255,255,255,.06);color:#aab1c4;font-weight:700;font-size:13.5px;margin-top:10px}
+
+  /* ---------- toast ---------- */
+  #toast{
+    position:fixed;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-80px);
+    z-index:60;background:rgba(24,29,46,.97);border:1px solid rgba(255,210,90,.4);
+    padding:11px 18px;border-radius:14px;font-size:13px;font-weight:600;max-width:86%;
+    box-shadow:0 10px 34px rgba(0,0,0,.5);transition:transform .3s cubic-bezier(.2,.9,.3,1);text-align:center;
+  }
+  #toast.show{transform:translate(-50%,0)}
+  #toast b{color:#ffd25a}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="h-avatar"><img src="skins/default.png?v=real4" alt="Мартира" onerror="this.style.display='none'"></div>
+    <div class="h-title">
+      <h1>МАРТИРА КОМБАТ</h1>
+      <span>тапай · качайся · богатей</span>
+    </div>
+    <button class="h-btn" id="open-settings">⋯</button>
+  </header>
+
+  <main id="main">
+
+    <!-- БИРЖА -->
+    <section class="page active" id="page-exchange">
+      <div class="stats">
+        <div class="stat"><span class="lb">Прибыль за тап</span><span class="vl green"><span class="c c14">М</span><b id="st-tap">+1</b></span></div>
+        <div class="stat"><span class="lb">Монет для апа</span><span class="vl blue" id="st-next">5K</span></div>
+        <div class="stat"><span class="lb">Прибыль в час</span><span class="vl green"><span class="c c14">М</span><b id="st-hour">0</b></span></div>
+      </div>
+
+      <div class="balance"><span class="c c46">М</span><b id="balance">0</b></div>
+
+      <div class="lvl-row">
+        <span class="ln"><span id="lvl-name">Бронза</span> <small>›</small></span>
+        <span style="color:#8d94a8;font-weight:600">Уровень <b id="lvl-num" style="color:#eef1f7">1/7</b></span>
+      </div>
+      <div class="lvl-bar"><i id="lvl-fill"></i></div>
+
+      <div class="arena" id="arena">
+        <div class="tap-circle" id="tap-circle">
+          <img id="tap-skin" src="skins/default.png?v=real4" alt="Мартира">
+        </div>
+      </div>
+
+      <div class="energy-row">
+        <div class="energy"><span class="bolt">⚡</span><b id="energy">2500</b><span class="dim">/ <span id="energy-max">2500</span></span></div>
+        <button class="boost-btn" id="open-boost">🚀 Boost</button>
+      </div>
+    </section>
+
+    <!-- МАЙНИНГ -->
+    <section class="page" id="page-mine">
+      <div class="ph"><h2>⛏️ Майнинг</h2><div class="bal"><span class="c c18">М</span><span id="bal-mine">0</span></div></div>
+      <p class="ph-sub">Прокачивай карточки — они приносят <b style="color:#3ddc84">МАРТИРА КОИН</b> каждый час, даже когда тебя нет в игре (макс. 3 часа офлайн).</p>
+      <div class="mine-list" id="mine-list"></div>
+    </section>
+
+    <!-- ДРУЗЬЯ -->
+    <section class="page" id="page-friends">
+      <div class="ph"><h2>👥 Друзья</h2><div class="bal"><span class="c c18">М</span><span id="bal-fr">0</span></div></div>
+      <div class="fr-hero">
+        <div class="big">👱</div>
+        <h3>Позови друзей — получи +5 000</h3>
+        <p>За каждого друга, который зайдёт по твоей ссылке, ты получишь <b style="color:#ffd25a">5 000 МАРТИРА КОИН</b>. Другу тоже упадёт +1 000 на старте.</p>
+        <div class="fr-link">
+          <input id="ref-link" readonly value="загрузка...">
+          <button class="fr-copy" id="copy-ref">Копировать</button>
+        </div>
+        <div id="fr-count" style="margin-top:12px;font-size:12px;color:#8d94a8"></div>
+      </div>
+      <div class="fr-list" id="fr-list"></div>
+    </section>
+
+    <!-- СКИНЫ -->
+    <section class="page" id="page-skins">
+      <div class="ph"><h2>👕 Скины</h2><div class="bal"><span class="c c18">М</span><span id="bal-skins">0</span></div></div>
+      <p class="ph-sub">Настоящие фото-скины Мартира покупаются за <b style="color:#ffd25a">МАРТИРА КОИН</b> — чем круче скин, тем больше бонус к каждому тапу.</p>
+      <div class="skins-grid" id="skins-grid"></div>
+    </section>
+
+  </main>
+
+  <div class="nav-wrap">
+    <nav>
+      <button class="active" data-page="exchange"><span class="ic">📈</span>Биржа</button>
+      <button data-page="mine"><span class="ic">⛏️</span>Майнинг</button>
+      <button data-page="friends"><span class="ic">👥</span>Друзья</button>
+      <button data-page="skins"><span class="ic">👕</span>Скины</button>
+    </nav>
+  </div>
+</div>
+
+<!-- BOOST sheet -->
+<div class="sheet" id="sheet-boost">
+  <div class="panel">
+    <div class="grab"></div>
+    <h3>🚀 Усилители</h3>
+    <p class="s-sub">Копим быстрее, тапаем сильнее</p>
+    <div class="bs-list" id="boost-list"></div>
+    <button class="close-btn" data-close>Закрыть</button>
+  </div>
+</div>
+
+<!-- SETTINGS sheet -->
+<div class="sheet" id="sheet-settings">
+  <div class="panel">
+    <div class="grab"></div>
+    <h3>⚙️ Настройки</h3>
+    <p class="s-sub">МАРТИРА КОМБАТ · валюта: МАРТИРА КОИН (MRT)</p>
+    <button class="sound-btn" id="sound-toggle">🔊 Звук: вкл</button>
+    <button class="danger-btn" id="reset">🗑 Сбросить весь прогресс</button>
+    <button class="close-btn" data-close>Закрыть</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+
+/* ================= ДАННЫЕ ИГРЫ ================= */
+const LEVELS=[
+  {name:'Бронза',   need:0},
+  {name:'Серебро',  need:5e3},
+  {name:'Золото',   need:3e4},
+  {name:'Платина',  need:1e5},
+  {name:'Бриллиант',need:3e5},
+  {name:'Мастер',   need:1e6},
+  {name:'Легенда',  need:5e6},
+];
+
+const UPGRADES=[
+  {id:'zen',   icon:'📰', name:'Пиар в Дзене',        basePrice:130,    baseIncome:40},
+  {id:'merch', icon:'🧢', name:'Мерч МАРТИРА',         basePrice:340,    baseIncome:95},
+  {id:'social',icon:'📱', name:'Промо в соцсетях',     basePrice:900,    baseIncome:240},
+  {id:'stream',icon:'🎥', name:'Стрим Мартиры',        basePrice:2300,   baseIncome:600},
+  {id:'devs',  icon:'👨‍💻', name:'Команда разработки',  basePrice:5800,   baseIncome:1500},
+  {id:'list',  icon:'📊', name:'Листинг MRT на бирже', basePrice:16000,  baseIncome:4600},
+  {id:'movie', icon:'🎬', name:'Мультфильм «Мартира»', basePrice:45000,  baseIncome:12500},
+  {id:'park',  icon:'🎡', name:'Парк «Мартиралэнд»',   basePrice:130000, baseIncome:36000},
+];
+
+const SKINS=[
+  {id:'default', name:'Мартира Классик',   img:'default.png?v=real5',   price:0,      bonus:0},
+  {id:'business',name:'Мартира Бизнес',    img:'business.png?v=real5',  price:2500,   bonus:1},
+  {id:'sport',   name:'Мартира Спортсмен', img:'sport.png?v=real5',     img2:'спорт.png?v=real5', price:7500,   bonus:2},
+  {id:'gangsta', name:'Мартира Гангста',   img:'gangsta.png?v=real5',   price:15000,  bonus:3},
+  {id:'rocker',  name:'Мартира Рокер',     img:'rocker.png?v=real5',    price:30000,  bonus:4},
+  {id:'gamer',   name:'Мартира Геймер',    img:'gamer.png?v=real5',     price:50000,  bonus:5},
+  {id:'cyber',   name:'Мартира Кибер',     img:'cyber.png?v=real5',     price:80000,  bonus:6},
+  {id:'astronaut',name:'Мартира Астронавт',img:'astronaut.png?v=real5', price:120000, bonus:8},
+  {id:'ninja',   name:'Мартира Ниндзя',    img:'ninja.png?v=real5',     price:180000, bonus:10},
+  {id:'gold',    name:'Золотая Мартира',   img:'gold.png?v=real5',      img2:'золото.png?v=real5', price:260000, bonus:12},
+  {id:'king',    name:'Мартира Король',    img:'king.png?v=real5',      price:400000, bonus:15},
+];
+
+/* ================= СОСТОЯНИЕ ================= */
+const store={
+  get(){try{return localStorage.getItem('martira')}catch(e){return null}},
+  set(v){try{localStorage.setItem('martira',v)}catch(e){}},
+  del(){try{localStorage.removeItem('martira')}catch(e){}}
+};
+const fresh=()=>({
+  coins:0,total:0,
+  multitap:0,energyLvl:0,
+  energy:2500,
+  up:{},skins:['default'],skin:'default',
+  refills:{day:'',used:0},
+  seen:Date.now()
+});
+let S=(()=>{try{const d=JSON.parse(store.get());return d?Object.assign(fresh(),d):fresh()}catch(e){return fresh()}})();
+let prevLvl=levelIndex();
+
+const save=()=>{S.seen=Date.now();store.set(JSON.stringify(S))};
+let saveT=null;
+const saveD=()=>{clearTimeout(saveT);saveT=setTimeout(save,400)};
+
+/* ================= ИГРОК / РЕФЕРАЛКА ================= */
+const PID=(()=>{
+  let p=null;try{p=localStorage.getItem('martira_pid')}catch(e){}
+  if(!p){p='p'+Math.random().toString(16).slice(2,10)+Date.now().toString(16).slice(-4);try{localStorage.setItem('martira_pid',p)}catch(e){}}
+  return p;
+})();
+const myRefLink=()=>location.origin+location.pathname+'?ref='+PID;
+
+function renderFriends(list){
+  const box=$('#fr-list');
+  if(!list||!list.length){
+    box.innerHTML='<div class="fr-empty">Пока пусто — отправь ссылку друзьям 🚀<br>Они получат +1 000, а тебе упадёт +5 000</div>';
+    $('#fr-count').textContent='Приглашено друзей: 0';
+    return;
+  }
+  $('#fr-count').textContent='Приглашено друзей: '+list.length;
+  box.innerHTML=list.map(f=>{
+    const d=new Date((f.ts||Date.now()/1000)*1000);
+    const ds=d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})+', '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="fr-item">
+      <div class="fr-ava">👤</div>
+      <div class="fr-body"><div class="fr-name">Игрок ${String(f.pid).slice(1,7)}</div><div class="fr-date">Зашёл: ${ds}</div></div>
+      <div class="fr-plus"><span class="c" style="--s:15px">М</span>+5K</div>
+    </div>`;
+  }).join('');
+}
+
+async function syncFriends(quiet){
+  try{
+    const r=await fetch('/api/me?pid='+encodeURIComponent(PID),{cache:'no-store'}).then(x=>x.json());
+    if(r&&r.ok){
+      if(r.pending>0){
+        S.coins+=r.pending;S.total+=r.pending;
+        renderBalance();renderLevel();save();
+        toast(`По твоей ссылке зашёл друг: <b>+${fmt(r.pending)}</b> 🪙`);
+      }
+      renderFriends(r.friends);
+    }
+  }catch(e){
+    if(!quiet)renderFriends(null);
+  }
+}
+
+async function checkReferral(){
+  try{
+    const q=new URLSearchParams(location.search);
+    const ref=q.get('ref');
+    if(!ref||ref===PID)return;
+    const r=await fetch('/api/join?ref='+encodeURIComponent(ref)+'&pid='+encodeURIComponent(PID),{cache:'no-store'}).then(x=>x.json());
+    if(r&&r.ok){
+      S.coins+=r.bonus;S.total+=r.bonus;
+      renderBalance();renderLevel();save();
+      setTimeout(()=>toast(`Тебя пригласил друг — <b>+${fmt(r.bonus)}</b> МАРТИРА КОИН 🎁`),900);
+    }
+  }catch(e){}
+  try{history.replaceState(null,'',location.pathname)}catch(e){}
+};
+
+/* ================= ВЫЧИСЛЕНИЯ ================= */
+const skinById=id=>SKINS.find(s=>s.id===id)||SKINS[0];
+const perTap=()=>1+S.multitap+skinById(S.skin).bonus;
+const maxEnergy=()=>2500+S.energyLvl*500;
+const cardPrice=(u,l)=>Math.round(u.basePrice*Math.pow(1.5,l));
+const cardIncomeOne=(u,i)=>Math.round(u.baseIncome*Math.pow(1.15,i));
+const cardIncome=(u,l)=>{let s=0;for(let i=0;i<l;i++)s+=cardIncomeOne(u,i);return s};
+const perHour=()=>UPGRADES.reduce((a,u)=>a+cardIncome(u,S.up[u.id]||0),0);
+
+function levelIndex(){let i=0;LEVELS.forEach((l,j)=>{if(S.total>=l.need)i=j});return i}
+
+/* ================= ФОРМАТЫ ================= */
+const fmt=n=>new Intl.NumberFormat('ru-RU').format(Math.floor(n));
+function trim(v){let s=v>=100?v.toFixed(0):v>=10?v.toFixed(1):v.toFixed(2);s=s.replace(/[.,]?0+$/,'');return s.replace('.',',')}
+const fmtK=n=>n>=1e6?trim(n/1e6)+'M':n>=1e4?trim(n/1e3)+'K':String(Math.floor(n));
+
+/* ================= ЗВУКИ (WebAudio, без файлов) ================= */
+const Sfx=(()=>{
+  let ctx=null,master=null,muted=false;
+  try{muted=localStorage.getItem('martira_mute')==='1'}catch(e){}
+  function ac(){
+    if(!ctx){
+      ctx=new (window.AudioContext||window.webkitAudioContext)();
+      master=ctx.createGain();master.gain.value=.6;master.connect(ctx.destination);
+    }
+    if(ctx.state==='suspended')ctx.resume();
+    return ctx;
+  }
+  function tone(f1,f2,dur,type,vol,delay){
+    const c=ac(),t=c.currentTime+(delay||0);
+    const o=c.createOscillator(),g=c.createGain();
+    o.type=type;o.frequency.setValueAtTime(f1,t);
+    if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol,t+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+0.02);
+  }
+  return{
+    get muted(){return muted},
+    toggle(){muted=!muted;try{localStorage.setItem('martira_mute',muted?'1':'0')}catch(e){}return muted},
+    tap(){if(muted)return;const f=1500+Math.random()*400;tone(f,f*1.7,0.08,'triangle',0.16);tone(300,130,0.03,'sine',0.14)},
+    deny(){if(muted)return;tone(160,90,0.12,'sawtooth',0.10)},
+    buy(){if(muted)return;tone(660,0,0.09,'triangle',0.18);tone(880,0,0.12,'triangle',0.18,0.08);tone(1320,0,0.14,'sine',0.12,0.16)},
+    pick(){if(muted)return;tone(520,780,0.09,'sine',0.14)},
+    power(){if(muted)return;tone(240,960,0.22,'sine',0.16)},
+    level(){if(muted)return;tone(523,0,0.12,'triangle',0.16);tone(659,0,0.12,'triangle',0.16,0.1);tone(784,0,0.12,'triangle',0.16,0.2);tone(1047,0,0.22,'triangle',0.18,0.3)},
+    coin(){if(muted)return;tone(988,1319,0.12,'triangle',0.15)}
+  };
+})();
+
+/* ================= КАРТИНКИ С ЗАПАСНЫМ ИМЕНЕМ ================= */
+function imgFb(el,alt){
+  el.onerror=null;
+  if(alt){el.src=alt}else{el.style.opacity=.15}
+}
+function setSkinImg(el,sk){
+  el.style.display='';
+  el.onerror=()=>{el.onerror=null;if(sk.img2)el.src=sk.img2;else el.style.display='none'};
+  el.src=sk.img;
+}
+
+/* ================= РЕНДЕР ================= */
+function renderBalance(){$('#balance').textContent=fmt(S.coins);$('#bal-mine').textContent=fmtK(S.coins);$('#bal-fr').textContent=fmtK(S.coins);$('#bal-skins').textContent=fmtK(S.coins)}
+function renderStats(){
+  $('#st-tap').textContent='+'+perTap();
+  const li=levelIndex(),next=LEVELS[li+1];
+  $('#st-next').textContent=next?fmtK(next.need-S.total):'МАКС';
+  $('#st-hour').textContent='+'+fmtK(perHour());
+}
+function renderLevel(){
+  const li=levelIndex(),cur=LEVELS[li],next=LEVELS[li+1];
+  $('#lvl-name').textContent=cur.name;
+  $('#lvl-num').textContent=(li+1)+'/'+LEVELS.length;
+  $('#lvl-fill').style.width=next?Math.min(100,(S.total-cur.need)/(next.need-cur.need)*100)+'%':'100%';
+  if(li>prevLvl){prevLvl=li;Sfx.level();toast('🎉 Новый уровень: <b>'+cur.name+'</b>!');}
+}
+function renderEnergy(){$('#energy').textContent=fmt(Math.floor(S.energy));$('#energy-max').textContent=fmt(maxEnergy())}
+
+/* ================= ТАП ================= */
+const circle=$('#tap-circle'),arena=$('#arena');
+circle.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  const p=perTap();
+  if(S.energy<p){
+    circle.classList.remove('denied');void circle.offsetWidth;circle.classList.add('denied');
+    Sfx.deny();
+    toast('⚡ Энергия закончилась — подожди или нажми <b>Boost</b>');
+    return;
+  }
+  S.energy-=p;S.coins+=p;S.total+=p;
+  Sfx.tap();
+  const r=arena.getBoundingClientRect();
+  const pop=document.createElement('div');
+  pop.className='pop';
+  pop.textContent='+'+p;
+  pop.style.left=(e.clientX-r.left+(Math.random()*36-18))+'px';
+  pop.style.top=(e.clientY-r.top-14)+'px';
+  arena.appendChild(pop);
+  pop.addEventListener('animationend',()=>pop.remove());
+  circle.classList.add('pressed');
+  setTimeout(()=>circle.classList.remove('pressed'),70);
+  try{navigator.vibrate&&navigator.vibrate(8)}catch(err){}
+  renderBalance();renderEnergy();renderStats();renderLevel();
+  saveD();
+});
+circle.addEventListener('contextmenu',e=>e.preventDefault());
+
+/* ================= ТЕКУЧКА ================= */
+setInterval(()=>{
+  let ch=false;
+  if(S.energy<maxEnergy()){S.energy=Math.min(maxEnergy(),S.energy+3);renderEnergy();ch=true}
+  const ph=perHour();
+  if(ph>0&&!document.hidden){S.coins+=ph/3600;S.total+=ph/3600;renderBalance();renderLevel();ch=true}
+  if(ch)saveD();
+},1000);
+document.addEventListener('visibilitychange',()=>{save();if(!document.hidden){renderBalance();renderStats();renderLevel();renderEnergy()}});
+window.addEventListener('beforeunload',save);
+
+/* ================= НАВИГАЦИЯ ================= */
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+b.dataset.page));
+  $('#main').scrollTop=0;
+}));
+
+/* ================= МАЙНИНГ ================= */
+function renderMine(){
+  $('#mine-list').innerHTML=UPGRADES.map(u=>{
+    const l=S.up[u.id]||0,price=cardPrice(u,l),inc=l?cardIncome(u,l):cardIncomeOne(u,0);
+    const no=S.coins<price;
+    return `<div class="mine-card">
+      <div class="mine-ic">${u.icon}</div>
+      <div class="mine-body">
+        <div class="mine-name">${u.name}</div>
+        <div class="mine-sub">Прибыль в час&nbsp;<span class="c c14">М</span><b>+${fmtK(inc)}</b></div>
+        <div class="mine-lvl">уровень ${l}</div>
+      </div>
+      <button class="buy${no?' no':''}" data-up="${u.id}"><span class="c c16" style="--s:16px">М</span>${fmtK(price)}</button>
+    </div>`;
+  }).join('');
+}
+$('#mine-list').addEventListener('click',e=>{
+  const b=e.target.closest('[data-up]');if(!b)return;
+  const u=UPGRADES.find(x=>x.id===b.dataset.up);
+  const l=S.up[u.id]||0,price=cardPrice(u,l);
+  if(S.coins<price){Sfx.deny();toast('Не хватает монет — тапай ещё! 👱');return}
+  S.coins-=price;S.up[u.id]=l+1;
+  Sfx.buy();
+  renderMine();renderBalance();renderStats();saveD();
+  toast(`Улучшено: <b>${u.name}</b> до ур. ${l+1}`);
+});
+
+/* ================= СКИНЫ ================= */
+function renderSkins(){
+  $('#skins-grid').innerHTML=SKINS.map(sk=>{
+    const owned=S.skins.includes(sk.id),active=S.skin===sk.id;
+    let btn;
+    if(active)btn=`<button class="skin-btn on">✓ Активен</button>`;
+    else if(owned)btn=`<button class="skin-btn pick" data-pick="${sk.id}">Выбрать</button>`;
+    else{const no=S.coins<sk.price;btn=`<button class="skin-btn price${no?' no':''}" data-buy="${sk.id}"><span class="c" style="--s:15px">М</span>${fmtK(sk.price)}</button>`}
+    return `<div class="skin-card${active?' active':''}">
+      <div class="skin-img"><img src="${sk.img}" alt="${sk.name}" loading="lazy" onerror="imgFb(this,'${sk.img2||''}')"><span class="skin-bonus">${sk.bonus?'+'+sk.bonus+' за тап':'Базовый'}</span></div>
+      <div class="skin-info">
+        <div class="skin-name">${sk.name}</div>
+        ${btn}
+      </div>
+    </div>`;
+  }).join('');
+}
+$('#skins-grid').addEventListener('click',e=>{
+  const buy=e.target.closest('[data-buy]'),pick=e.target.closest('[data-pick]');
+  if(buy){
+    const sk=skinById(buy.dataset.buy);
+    if(S.coins<sk.price){Sfx.deny();toast('Не хватает монет на этот скин 🪙');return}
+    S.coins-=sk.price;S.skins.push(sk.id);applySkin(sk.id);
+    Sfx.buy();
+    toast(`Скин <b>${sk.name}</b> куплен и надет! 🔥`);
+  }else if(pick){
+    applySkin(pick.dataset.pick);
+    Sfx.pick();
+    toast(`Надет скин: <b>${skinById(pick.dataset.pick).name}</b>`);
+  }else return;
+  renderSkins();renderBalance();renderStats();save();
+});
+function applySkin(id){
+  S.skin=id;
+  const img=$('#tap-skin');
+  img.style.opacity=0;
+  setTimeout(()=>{setSkinImg(img,skinById(id));img.style.opacity=1},160);
+}
+
+/* ================= BOOST ================= */
+const BOOSTS=[
+  {id:'refill',icon:'🔋',name:'Полная зарядка',desc:'Мгновенно заполняет энергию',sub:()=>{const t=today();return `Осталось сегодня: ${3-t.used}/3`},price:()=>0,
+   can:()=>today().used<3,run(){const t=today();t.used++;S.energy=maxEnergy();toast('⚡ Энергия полностью восстановлена!')}},
+  {id:'tap',icon:'🚀',name:'Мультитап',desc:()=>`+1 монета за тап · ур. ${S.multitap}`,sub:()=>'Работает всегда',price:l=>Math.round(500*Math.pow(2,S.multitap)),
+   can:()=>true,run(){S.multitap++;toast(`🚀 Мультитап увеличен: теперь <b>+${perTap()}</b> за тап`)}},
+  {id:'energy',icon:'⚡',name:'Лимит энергии',desc:()=>`+500 к запасу энергии · ур. ${S.energyLvl}`,sub:()=>'Работает всегда',price:()=>Math.round(400*Math.pow(1.8,S.energyLvl)),
+   can:()=>true,run(){S.energyLvl++;toast('⚡ Запас энергии увеличен до <b>'+fmt(maxEnergy())+'</b>')}},
+];
+function today(){
+  const d=new Date().toISOString().slice(0,10);
+  if(S.refills.day!==d)S.refills={day:d,used:0};
+  return S.refills;
+}
+function renderBoost(){
+  $('#boost-list').innerHTML=BOOSTS.map(b=>{
+    const price=b.price(),free=price===0;
+    const dis=!b.can()||(!free&&S.coins<price);
+    return `<div class="bs-item">
+      <div class="bs-ic">${b.icon}</div>
+      <div class="bs-body">
+        <div class="bs-name">${b.name}</div>
+        <div class="bs-desc">${typeof b.desc==='function'?b.desc():b.desc}</div>
+        <div class="bs-used">${b.sub()}</div>
+      </div>
+      <button class="buy${dis?' no':''}" data-boost="${b.id}">${free?'🎁 FREE':`<span class="c" style="--s:16px">М</span>${fmtK(price)}`}</button>
+    </div>`;
+  }).join('');
+}
+$('#boost-list').addEventListener('click',e=>{
+  const el=e.target.closest('[data-boost]');if(!el)return;
+  const b=BOOSTS.find(x=>x.id===el.dataset.boost);
+  if(!b.can()){Sfx.deny();toast('На сегодня бесплатные зарядки закончились 😴');return}
+  const price=b.price();
+  if(S.coins<price){Sfx.deny();toast('Не хватает монет 🪙');return}
+  S.coins-=price;b.run();
+  (b.id==='refill'?Sfx.power:Sfx.buy)();
+  renderBoost();renderBalance();renderStats();renderEnergy();save();
+});
+
+/* ================= SHEETS / ДРУЗЬЯ / НАСТРОЙКИ ================= */
+function openSheet(id){renderBoost();$(id).classList.add('open')}
+document.querySelectorAll('.sheet').forEach(sh=>sh.addEventListener('click',e=>{
+  if(e.target===sh||e.target.closest('[data-close]'))sh.classList.remove('open');
+}));
+$('#open-boost').addEventListener('click',()=>openSheet('#sheet-boost'));
+$('#open-settings').addEventListener('click',()=>$('#sheet-settings').classList.add('open'));
+$('#reset').addEventListener('click',()=>{
+  if(!confirm('Точно сбросить весь прогресс? Это нельзя отменить.'))return;
+  store.del();S=fresh();prevLvl=0;applySkin('default');
+  renderAll();save();$('#sheet-settings').classList.remove('open');
+  toast('Прогресс сброшен. Начнём с чистого листа! 👱');
+});
+$('#copy-ref').addEventListener('click',async()=>{
+  const v=$('#ref-link').value;
+  try{await navigator.clipboard.writeText(v)}catch(e){$('#ref-link').select();document.execCommand('copy')}
+  Sfx.pick();
+  toast('Ссылка скопирована! Отправь её друзьям 📨');
+});
+
+const sndBtn=$('#sound-toggle');
+function updSnd(){sndBtn.textContent=Sfx.muted?'🔇 Звук: выкл':'🔊 Звук: вкл'}
+updSnd();
+sndBtn.addEventListener('click',()=>{
+  Sfx.toggle();updSnd();
+  if(!Sfx.muted)Sfx.buy();
+});
+
+/* ================= TOAST ================= */
+let toastT=null;
+function toast(html){
+  const t=$('#toast');t.innerHTML=html;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+/* ================= СТАРТ ================= */
+(function(){
+  const away=(Date.now()-(S.seen||Date.now()))/1000;
+  const ph=perHour();
+  if(ph>0&&away>90){
+    const gain=Math.min(away,3*3600)*ph/3600;
+    S.coins+=gain;S.total+=gain;
+    setTimeout(()=>toast(`Пока тебя не было, Мартира заработал <b>+${fmt(gain)}</b> 🪙`),600);
+  }
+  const img=$('#tap-skin');setSkinImg(img,skinById(S.skin));
+  $('#ref-link').value=myRefLink();
+  renderAll();save();
+  renderFriends(null);
+  checkReferral();
+  syncFriends(true);
+  setInterval(()=>syncFriends(true),15000);
+})();
+function renderAll(){renderBalance();renderStats();renderLevel();renderEnergy();renderMine();renderSkins();renderBoost()}
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3d68e3acbe30666',t:'MTc4OTc5OTU3MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
